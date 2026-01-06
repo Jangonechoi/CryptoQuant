@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
-from typing import Optional
-from app.services.binance import get_24h_ticker, get_klines, get_exchange_info
+from typing import Optional, List
+from app.services.binance import get_24h_ticker, get_klines, get_exchange_info, get_24h_tickers
 
 router = APIRouter()
 
@@ -50,6 +50,33 @@ async def get_coin_list():
                 {"symbol": "BNBUSDT", "name": "Binance Coin", "base": "BNB", "quote": "USDT"},
             ]
         }
+
+
+@router.get("/prices")
+async def get_market_prices(
+    symbols: Optional[List[str]] = Query(None, description="조회할 심볼 목록 (없으면 인기 코인 반환)"),
+):
+    """
+    여러 암호화폐의 시세를 한 번에 조회
+    symbols 파라미터가 없으면 인기 코인들을 반환합니다.
+    """
+    try:
+        # symbols가 없으면 인기 코인 목록 사용
+        if not symbols:
+            popular_symbols = [
+                "BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT",
+                "USDCUSDT", "DOGEUSDT", "TRXUSDT", "ADAUSDT", "AVAXUSDT",
+                "MATICUSDT", "DOTUSDT", "LINKUSDT", "UNIUSDT", "LTCUSDT",
+                "ATOMUSDT", "ETCUSDT", "XLMUSDT", "ALGOUSDT", "NEARUSDT",
+                "FILUSDT", "ICPUSDT", "APTUSDT", "ARBUSDT", "OPUSDT",
+            ]
+            tickers = await get_24h_tickers(popular_symbols)
+        else:
+            tickers = await get_24h_tickers(symbols)
+        
+        return {"prices": tickers}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/klines")

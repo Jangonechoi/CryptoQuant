@@ -30,6 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* 우주 행성 배경 */}
+        <div className="planets-container">
+          <div className="planet planet-1"></div>
+          <div className="planet planet-2"></div>
+          <div className="planet planet-3"></div>
+          <div className="planet planet-4"></div>
+          <div className="planet planet-5"></div>
+        </div>
         <QueryProvider>
           <AppLayout>{children}</AppLayout>
         </QueryProvider>

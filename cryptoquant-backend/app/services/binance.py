@@ -38,6 +38,55 @@ async def get_24h_ticker(symbol: str) -> Dict[str, Any]:
             raise Exception(f"데이터 조회 실패: {str(e)}")
 
 
+async def get_24h_tickers(symbols: List[str] = None) -> List[Dict[str, Any]]:
+    """
+    여러 코인의 24시간 티커 정보를 한 번에 조회
+    symbols가 None이면 모든 USDT 페어를 반환
+    """
+    async with httpx.AsyncClient() as client:
+        try:
+            # Binance API는 심볼 없이 호출하면 모든 티커를 반환
+            response = await client.get(
+                f"{BINANCE_BASE_URL}/ticker/24hr",
+                timeout=15.0,
+            )
+            response.raise_for_status()
+            all_tickers = response.json()
+            
+            # USDT 페어만 필터링
+            usdt_tickers = [
+                ticker for ticker in all_tickers
+                if ticker["symbol"].endswith("USDT")
+            ]
+            
+            # 특정 심볼만 요청한 경우 필터링
+            if symbols:
+                symbol_set = {s.upper() for s in symbols}
+                usdt_tickers = [
+                    ticker for ticker in usdt_tickers
+                    if ticker["symbol"] in symbol_set
+                ]
+            
+            # 데이터 형식 변환
+            result = []
+            for ticker in usdt_tickers:
+                result.append({
+                    "symbol": ticker["symbol"],
+                    "price": float(ticker["lastPrice"]),
+                    "change24h": float(ticker["priceChange"]),
+                    "changePercent24h": float(ticker["priceChangePercent"]),
+                    "volume24h": float(ticker["volume"]),
+                    "high24h": float(ticker["highPrice"]),
+                    "low24h": float(ticker["lowPrice"]),
+                })
+            
+            return result
+        except httpx.HTTPStatusError as e:
+            raise Exception(f"Binance API 오류: {e.response.status_code}")
+        except Exception as e:
+            raise Exception(f"데이터 조회 실패: {str(e)}")
+
+
 async def get_klines(
     symbol: str, interval: str = "1d", limit: int = 100
 ) -> List[Dict[str, Any]]:

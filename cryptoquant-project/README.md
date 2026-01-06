@@ -5,6 +5,7 @@
 ## 기술 스택
 
 ### Frontend
+
 - **Next.js 14** - React 프레임워크
 - **TypeScript** - 타입 안정성
 - **Tailwind CSS** - 스타일링
@@ -13,6 +14,7 @@
 - **TradingView Lightweight Charts** - 차트 시각화
 
 ### Backend
+
 - **FastAPI** - Python 웹 프레임워크
 - **Binance API** - 암호화폐 시세 데이터
 
@@ -21,18 +23,33 @@
 ### 프론트엔드 실행
 
 1. 의존성 설치
+
 ```bash
 cd cryptoquant-project
 npm install
 ```
 
 2. 환경 변수 설정
+
 ```bash
-cp .env.local.example .env.local
-# .env.local 파일을 열어서 API URL을 설정하세요
+# .env.local 파일을 생성하고 다음 변수들을 설정하세요
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
 ```
 
-3. 개발 서버 실행
+**Google OAuth 설정 방법:**
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에 접속
+2. 프로젝트 생성 또는 선택
+3. "API 및 서비스" > "사용자 인증 정보"로 이동
+4. "사용자 인증 정보 만들기" > "OAuth 클라이언트 ID" 선택
+5. 애플리케이션 유형: "웹 애플리케이션"
+6. 승인된 JavaScript 원본: `http://localhost:3000`
+7. 승인된 리디렉션 URI: `http://localhost:3000/callback/oauth`
+8. 생성된 Client ID를 `.env.local`의 `NEXT_PUBLIC_GOOGLE_CLIENT_ID`에 입력
+
+9. 개발 서버 실행
+
 ```bash
 npm run dev
 ```
@@ -42,6 +59,7 @@ npm run dev
 ### 백엔드 실행
 
 1. 가상환경 생성 및 활성화
+
 ```bash
 cd cryptoquant-backend
 python3 -m venv venv
@@ -51,11 +69,24 @@ venv\Scripts\activate  # Windows
 ```
 
 2. 의존성 설치
+
 ```bash
 pip install -r requirements.txt
 ```
 
-3. 서버 실행
+3. 환경 변수 설정
+
+```bash
+# .env 파일을 생성하고 다음 변수들을 설정하세요
+DATABASE_URL=sqlite:///./cryptoquant.db
+JWT_SECRET_KEY=your-secret-key-change-in-production
+GOOGLE_CLIENT_ID=your-google-client-id-here
+```
+
+**중요:** Frontend와 동일한 Google Client ID를 사용해야 합니다.
+
+4. 서버 실행
+
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -67,6 +98,7 @@ API 문서는 [http://localhost:8000/docs](http://localhost:8000/docs)에서 확
 - ✅ 실시간 암호화폐 시세 조회 (Binance API 연동)
 - ✅ 인터랙티브 캔들스틱 차트
 - ✅ 자동매매 전략 백테스트
+- ✅ Google 소셜 로그인
 - ✅ 다크 모드 UI (Binance 스타일)
 - ✅ 반응형 디자인
 
@@ -90,7 +122,7 @@ cryptoquant-backend/
 
 ## 다음 단계
 
-- [ ] 소셜 로그인 구현 (Google/GitHub)
+- [x] 소셜 로그인 구현 (Google)
 - [ ] PortOne 결제 시스템 통합
 - [ ] 실제 백테스트 알고리즘 구현
 - [ ] 사용자 대시보드 및 이력 관리

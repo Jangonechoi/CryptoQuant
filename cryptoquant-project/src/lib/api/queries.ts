@@ -28,8 +28,26 @@ export const useCoinList = () => {
   });
 };
 
+// 여러 코인 가격 조회 (최적화)
+export const useMarketPrices = (symbols?: string[]) => {
+  return useQuery({
+    queryKey: ["marketPrices", symbols],
+    queryFn: async () => {
+      const response = await apiClient.get(`/api/market/prices`, {
+        params: symbols ? { symbols } : {},
+      });
+      return response.data;
+    },
+    staleTime: 1000 * 60, // 1분
+  });
+};
+
 // 캔들스틱 데이터 조회
-export const useKlines = (symbol: string, interval: string, limit: number = 100) => {
+export const useKlines = (
+  symbol: string,
+  interval: string,
+  limit: number = 100
+) => {
   return useQuery({
     queryKey: ["klines", symbol, interval, limit],
     queryFn: async () => {
@@ -44,7 +62,10 @@ export const useKlines = (symbol: string, interval: string, limit: number = 100)
 };
 
 // 백테스트 실행
-export const useBacktest = (config: any, enabled: boolean = false) => {
+export const useBacktest = (
+  config: Record<string, unknown>,
+  enabled: boolean = false
+) => {
   return useQuery({
     queryKey: ["backtest", config],
     queryFn: async () => {
@@ -56,3 +77,15 @@ export const useBacktest = (config: any, enabled: boolean = false) => {
   });
 };
 
+// 현재 사용자 정보 조회
+export const useCurrentUser = () => {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      const response = await apiClient.get(`/api/auth/me`);
+      return response.data;
+    },
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5분
+  });
+};

@@ -63,7 +63,7 @@ function CoinCard({ symbol }: { symbol: string }) {
       </div>
       <div className="space-y-2">
         <p className="text-2xl font-bold text-neutral-100">
-          ₩{price.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          US${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </p>
         <p
           className={`text-sm font-semibold ${
@@ -77,4 +77,3 @@ function CoinCard({ symbol }: { symbol: string }) {
     </Link>
   );
 }
-

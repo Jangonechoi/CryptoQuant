@@ -6,7 +6,10 @@ import {
   IChartApi,
   CandlestickSeriesPartialOptions,
   CandlestickSeries,
+  LineSeries,
+  LineSeriesPartialOptions,
 } from "lightweight-charts";
+import type { IndicatorSettings } from "./IndicatorPanel";
 
 interface TradingChartProps {
   data?: Array<{
@@ -17,13 +20,28 @@ interface TradingChartProps {
     close: number;
   }>;
   isLoading?: boolean;
+  indicators?: IndicatorSettings;
+  indicatorData?: {
+    sma?: Array<{ time: number; value: number }>;
+    ema?: Array<{ time: number; value: number }>;
+    rsi?: Array<{ time: number; value: number }>;
+  };
 }
 
-export default function TradingChart({ data, isLoading }: TradingChartProps) {
+export default function TradingChart({
+  data,
+  isLoading,
+  indicators,
+  indicatorData,
+}: TradingChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const seriesRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const smaSeriesRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const emaSeriesRef = useRef<any>(null);
   const [isChartReady, setIsChartReady] = useState(false);
 
   // 차트 초기화
@@ -108,6 +126,29 @@ export default function TradingChart({ data, isLoading }: TradingChartProps) {
           );
 
           seriesRef.current = candlestickSeries;
+
+          // SMA 라인 시리즈 초기화
+          const smaOptions: LineSeriesPartialOptions = {
+            color: "#3B82F6",
+            lineWidth: 2,
+            title: "SMA",
+            priceLineVisible: false,
+            lastValueVisible: true,
+          };
+          const smaSeries = chart.addSeries(LineSeries, smaOptions);
+          smaSeriesRef.current = smaSeries;
+
+          // EMA 라인 시리즈 초기화
+          const emaOptions: LineSeriesPartialOptions = {
+            color: "#F59E0B",
+            lineWidth: 2,
+            title: "EMA",
+            priceLineVisible: false,
+            lastValueVisible: true,
+          };
+          const emaSeries = chart.addSeries(LineSeries, emaOptions);
+          emaSeriesRef.current = emaSeries;
+
           setIsChartReady(true);
           console.log("Chart initialized, series created", {
             series: candlestickSeries,
@@ -148,6 +189,8 @@ export default function TradingChart({ data, isLoading }: TradingChartProps) {
       }
       setIsChartReady(false);
       seriesRef.current = null;
+      smaSeriesRef.current = null;
+      emaSeriesRef.current = null;
     };
   }, []);
 
@@ -198,6 +241,53 @@ export default function TradingChart({ data, isLoading }: TradingChartProps) {
       console.error("Error setting chart data:", error);
     }
   }, [data, isChartReady]);
+
+  // 지표 데이터 설정
+  useEffect(() => {
+    if (!isChartReady || !indicatorData || !indicators) {
+      return;
+    }
+
+    try {
+      // SMA 데이터 설정
+      if (
+        indicators.sma.enabled &&
+        indicatorData.sma &&
+        indicatorData.sma.length > 0 &&
+        smaSeriesRef.current
+      ) {
+        const smaFormatted = indicatorData.sma.map((item) => ({
+          time: item.time,
+          value: item.value,
+        }));
+        smaSeriesRef.current.setData(smaFormatted);
+        smaSeriesRef.current.applyOptions({ visible: true });
+      } else if (smaSeriesRef.current) {
+        smaSeriesRef.current.setData([]);
+        smaSeriesRef.current.applyOptions({ visible: false });
+      }
+
+      // EMA 데이터 설정
+      if (
+        indicators.ema.enabled &&
+        indicatorData.ema &&
+        indicatorData.ema.length > 0 &&
+        emaSeriesRef.current
+      ) {
+        const emaFormatted = indicatorData.ema.map((item) => ({
+          time: item.time,
+          value: item.value,
+        }));
+        emaSeriesRef.current.setData(emaFormatted);
+        emaSeriesRef.current.applyOptions({ visible: true });
+      } else if (emaSeriesRef.current) {
+        emaSeriesRef.current.setData([]);
+        emaSeriesRef.current.applyOptions({ visible: false });
+      }
+    } catch (error) {
+      console.error("Error setting indicator data:", error);
+    }
+  }, [indicatorData, indicators, isChartReady]);
 
   return (
     <div className="card p-0 overflow-hidden relative">
