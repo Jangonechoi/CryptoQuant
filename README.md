@@ -67,7 +67,7 @@ API 문서는 [http://localhost:8000/docs](http://localhost:8000/docs)에서 확
 - ✅ 실시간 암호화폐 시세 조회 (Binance API 연동)
 - ✅ 인터랙티브 캔들스틱 차트
 - ✅ 자동매매 전략 백테스트
-- ✅ 다크 모드 UI (Binance 스타일)
+- ✅ 다크 모드 UI 
 - ✅ 반응형 디자인
 
 ## 프로젝트 구조
