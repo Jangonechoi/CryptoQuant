@@ -124,7 +124,7 @@ cryptoquant-backend/
 
 - [x] 소셜 로그인 구현 (Google)
 - [ ] PortOne 결제 시스템 통합
-- [ ] 실제 백테스트 알고리즘 구현
+- [x] 실제 백테스트 알고리즘 구현
 - [ ] 사용자 대시보드 및 이력 관리
 - [ ] 데이터베이스 연동 (SQLite/PostgreSQL)
 

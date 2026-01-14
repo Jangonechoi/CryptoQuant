@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCoinList, useMarketPrice } from "@/lib/api/queries";
 import Loading from "@/components/ui/Loading";
 import Card from "@/components/ui/Card";
+import { getUsdToKrwRate, formatKrwPrice } from "@/lib/utils/exchangeRate";
 
 const POPULAR_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT"];
 
@@ -25,6 +27,7 @@ export default function PopularCoins() {
 
 function CoinCard({ symbol }: { symbol: string }) {
   const { data: marketData, isLoading } = useMarketPrice(symbol, "1d");
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   const baseSymbol = symbol.replace("USDT", "");
   const coinName =
@@ -35,6 +38,13 @@ function CoinCard({ symbol }: { symbol: string }) {
       : baseSymbol === "BNB"
       ? "Binance Coin"
       : baseSymbol;
+
+  // 환율 가져오기
+  useEffect(() => {
+    getUsdToKrwRate().then(setExchangeRate).catch(() => {
+      setExchangeRate(1300);
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -62,9 +72,16 @@ function CoinCard({ symbol }: { symbol: string }) {
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-2xl font-bold text-neutral-100">
-          US${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-        </p>
+        <div>
+          <p className="text-2xl font-bold text-neutral-100">
+            US${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </p>
+          {exchangeRate && (
+            <p className="text-lg font-medium text-neutral-400 mt-1">
+              {formatKrwPrice(price, exchangeRate)}
+            </p>
+          )}
+        </div>
         <p
           className={`text-sm font-semibold ${
             change >= 0 ? "text-success" : "text-danger"

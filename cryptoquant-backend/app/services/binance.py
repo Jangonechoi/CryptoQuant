@@ -88,12 +88,13 @@ async def get_24h_tickers(symbols: List[str] = None) -> List[Dict[str, Any]]:
 
 
 async def get_klines(
-    symbol: str, interval: str = "1d", limit: int = 100
+    symbol: str, interval: str = "1d", limit: int = 100, start_time: int = None
 ) -> List[Dict[str, Any]]:
     """
     캔들스틱 데이터 조회
     
     interval: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
+    start_time: 시작 시간 (Unix timestamp, 초 단위). None이면 최신 데이터부터 반환
     """
     # Binance interval 매핑
     interval_map = {
@@ -109,13 +110,19 @@ async def get_klines(
     
     async with httpx.AsyncClient() as client:
         try:
+            params = {
+                "symbol": symbol.upper(),
+                "interval": binance_interval,
+                "limit": min(limit, 1000),  # Binance 최대 제한
+            }
+            
+            # startTime이 제공되면 추가 (Binance는 밀리초 단위)
+            if start_time is not None:
+                params["startTime"] = start_time * 1000  # 초를 밀리초로 변환
+            
             response = await client.get(
                 f"{BINANCE_BASE_URL}/klines",
-                params={
-                    "symbol": symbol.upper(),
-                    "interval": binance_interval,
-                    "limit": min(limit, 1000),  # Binance 최대 제한
-                },
+                params=params,
                 timeout=10.0,
             )
             response.raise_for_status()

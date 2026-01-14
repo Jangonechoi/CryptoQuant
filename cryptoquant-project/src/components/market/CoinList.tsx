@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMarketPrices } from "@/lib/api/queries";
+import { useMarketPrices, useKlines } from "@/lib/api/queries";
 import { getCoinLogoUrl } from "@/lib/utils/coinLogo";
 
 interface CoinListProps {
@@ -25,6 +25,67 @@ interface CoinCardProps {
   symbol: string;
   price: number;
   changePercent24h: number;
+}
+
+// 간단한 미니 차트 컴포넌트
+function MiniSparkline({
+  symbol,
+  isPositive,
+}: {
+  symbol: string;
+  isPositive: boolean;
+}) {
+  // 리스트 뷰에서는 자동 갱신 비활성화 (요청 횟수 최적화)
+  const { data: klinesData, isLoading } = useKlines(symbol, "1h", 24, {
+    refetchInterval: false, // 자동 갱신 비활성화
+    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
+  });
+
+  if (isLoading || !klinesData?.data || klinesData.data.length === 0) {
+    return <div className="w-20 h-10 bg-neutral-800 rounded animate-pulse" />;
+  }
+
+  const prices: number[] = klinesData.data.map(
+    (item: { close: number }) => item.close
+  );
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const priceRange = maxPrice - minPrice || 1;
+
+  const width = 80;
+  const height = 40;
+  const padding = 4;
+
+  const points = prices.map((price: number, index: number) => {
+    const x = (index / (prices.length - 1)) * (width - padding * 2) + padding;
+    const y =
+      height -
+      padding -
+      ((price - minPrice) / priceRange) * (height - padding * 2);
+    return `${x},${y}`;
+  });
+
+  const pathData = `M ${points.join(" L ")}`;
+
+  return (
+    <div className="w-20 h-10 flex-shrink-0">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full h-full"
+      >
+        <path
+          d={pathData}
+          fill="none"
+          stroke={isPositive ? "#16C784" : "#EA3943"}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
 }
 
 function CoinCard({ symbol, price, changePercent24h }: CoinCardProps) {
@@ -104,6 +165,7 @@ function CoinCard({ symbol, price, changePercent24h }: CoinCardProps) {
           </h3>
           <p className="text-xs text-neutral-400 truncate">{coinName}</p>
         </div>
+        <MiniSparkline symbol={symbol} isPositive={isPositive} />
       </div>
       <div className="space-y-1">
         <p className="text-xl font-semibold text-neutral-100">

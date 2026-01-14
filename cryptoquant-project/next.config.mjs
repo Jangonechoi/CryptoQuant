@@ -22,6 +22,21 @@ const nextConfig = {
         hostname: "assets.coingecko.com",
         pathname: "/coins/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "resources.cryptocompare.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.cryptocompare.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.cryptocompare.com",
+        pathname: "/**",
+      },
     ],
   },
 };

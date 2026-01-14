@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getCoinLogoUrl } from "@/lib/utils/coinLogo";
+import { getUsdToKrwRate, formatKrwPrice } from "@/lib/utils/exchangeRate";
 
 interface PriceHeaderProps {
   symbol: string;
@@ -18,6 +20,7 @@ export default function PriceHeader({
   changePercent24h,
   volume24h,
 }: PriceHeaderProps) {
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const isPositive = change24h && change24h >= 0;
   const baseSymbol = symbol.replace("USDT", "").toUpperCase();
   const logoUrl = getCoinLogoUrl(symbol, "large");
@@ -25,6 +28,14 @@ export default function PriceHeader({
     `https://cryptoicons.org/api/icon/${baseSymbol.toLowerCase()}/200`,
     `https://assets.coinlore.com/img/50x50/${baseSymbol.toLowerCase()}.png`,
   ];
+
+  // 환율 가져오기
+  useEffect(() => {
+    getUsdToKrwRate().then(setExchangeRate).catch(() => {
+      // 실패 시 기본값 사용
+      setExchangeRate(1300);
+    });
+  }, []);
 
   return (
     <div className="card mb-6">
@@ -56,9 +67,16 @@ export default function PriceHeader({
               {baseSymbol}
             </h1>
             {price !== undefined ? (
-              <p className="text-2xl font-semibold text-neutral-100">
-                US${price.toLocaleString()}
-              </p>
+              <div className="space-y-1">
+                <p className="text-2xl font-semibold text-neutral-100">
+                  US${price.toLocaleString()}
+                </p>
+                {exchangeRate && (
+                  <p className="text-lg font-medium text-neutral-400">
+                    {formatKrwPrice(price, exchangeRate)}
+                  </p>
+                )}
+              </div>
             ) : (
               <div className="h-8 w-32 bg-neutral-700 rounded animate-pulse" />
             )}

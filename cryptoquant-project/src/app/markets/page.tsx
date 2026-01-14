@@ -1,6 +1,7 @@
 "use client";
 
 import CoinList from "@/components/market/CoinList";
+import MarketHighlights from "@/components/market/MarketHighlights";
 
 export default function MarketsPage() {
   // 인기 암호화폐 목록
@@ -42,6 +43,9 @@ export default function MarketsPage() {
           실시간 암호화폐 가격 및 시장 정보를 확인하세요.
         </p>
       </div>
+
+      {/* 시장 하이라이트 영역 */}
+      <MarketHighlights />
 
       {/* 암호화폐 리스트 - 한 줄에 5개씩 표시 */}
       <CoinList symbols={popularSymbols} columns={5} title="인기 암호화폐" />
